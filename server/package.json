@@ -1,9 +1,14 @@
 {
+  "type": "module",
   "dependencies": {
     "@fastify/cors": "^8.2.0",
+    "@mermaid-js/mermaid-cli": "^9.3.0",
     "@prisma/client": "^4.8.1",
+    "dayjs": "^1.11.7",
     "fastify": "^4.11.0",
-    "tsx": "^3.12.2"
+    "prisma-erd-generator": "^1.2.5",
+    "tsx": "^3.12.2",
+    "zod": "^3.20.2"
   },
   "devDependencies": {
     "prisma": "^4.8.1",
@@ -11,5 +16,8 @@
   },
   "scripts": {
     "dev": "tsx watch src/server.ts"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }
