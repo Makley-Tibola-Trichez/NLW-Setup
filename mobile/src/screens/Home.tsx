@@ -1,16 +1,51 @@
-import { View, Text, ScrollView } from "react-native";
+import { View, Text, ScrollView, Alert } from "react-native";
 import { HabitDay, DAY_SIZE } from "../components/HabitDay";
 import { Header } from "../components/Header";
-import { generateRangeDatesFromYearStart } from "../utils/generate-range-between-dates";
+import { generateRangeDatesFromYearStart } from "../utils/generateRangeBetweenDates";
 import { useNavigation } from "@react-navigation/native";
+
+import { api } from "../lib/axios";
+import { useState, useEffect } from "react";
+import { Loading } from "../components/Loading";
+import dayjs from "dayjs";
 
 const weekDays = ["D", "S", "T", "Q", "Q", "S", "S"];
 
 const datesFromYearStart = generateRangeDatesFromYearStart();
 const minimumSummaryDatesSizes = 18 * 5;
 const amoutOfDaysToFill = minimumSummaryDatesSizes - datesFromYearStart.length;
+
+type SummaryProps = Array<{
+  id: string;
+  date: string;
+  amount: number;
+  completed: number;
+}>;
+
 export function Home() {
   const { navigate: navigate } = useNavigation();
+  const [loading, setLoading] = useState(true);
+  const [summary, setSummary] = useState<SummaryProps>([]);
+  async function fetchData() {
+    try {
+      setLoading(true);
+      const response = await api.get("/summary");
+      setSummary(response.data);
+    } catch (error) {
+      Alert.alert("Ops", "Não foi possível carregar o sumário de hábitos!");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <View className="flex-1 bg-background px-8 pt-16">
@@ -35,9 +70,16 @@ export function Home() {
       >
         <View className="flex-row flex-wrap">
           {datesFromYearStart.map((date) => {
+            const dayWithHabits = summary.find((day) => {
+              return dayjs(date).isSame(day.date);
+            });
+
             return (
               <HabitDay
                 key={date.toISOString()}
+                amountOfCompleted={dayWithHabits?.completed}
+                amountOfHabits={dayWithHabits?.amount}
+                date={date}
                 onPress={() => navigate("habit", { date: date.toISOString() })}
               />
             );
